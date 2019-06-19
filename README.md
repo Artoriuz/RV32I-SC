@@ -24,3 +24,6 @@ This repository contains an extremely simple partial implementation of the RV32I
 - Evaluate switching from RV32I to RV64I.
 - Better separate GPIO addresses.
 - Write a program that assembles standard RISC-V assembly into an Altera memory file.
+
+## Simplified Schematic
+![Schematic](https://raw.githubusercontent.com/Artoriuz/RV32I-SC/master/images/schematic.png)
