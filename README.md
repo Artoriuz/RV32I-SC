@@ -1,7 +1,7 @@
 # RV32I-SC
 This repository contains an extremely simple implementation of the RV32I ISA strongly inspired by [David Patterson's and John Hennessy's Computer Organization and Design RISC-V Edition.](https://www.amazon.com/dp/0128122757) The project is entirely academic, it does not aim to be competitive against complex implementations. The rationale behind it was basically learning about RISC-V, the ISA, and processor design in general. If you want to deploy a RISC-V core, [I strongly recommend using a fully-featured and tested core instead.](https://github.com/riscv/riscv-wiki/wiki/RISC-V-Cores-and-SoCs)  
 
-## Design Choices
+## Current Design
 - Entirely written in VHDL.
 - Requires 5 clock cycles to complete any instruction.
 - Not designed with multiple RISC-V harts in mind, the memory model is relaxed.
