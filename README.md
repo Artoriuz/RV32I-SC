@@ -21,6 +21,7 @@ This repository contains an extremely simple implementation of the RV32I ISA str
 
 ## To-do List
 - Implement a classic 5-stage RISC pipeline.
+- Evaluate the implementation of the privileged ISA.
 - Evaluate the implementation of extensions.
 - Evaluate switching from RV32I to RV64I.
 - Better separate GPIO addresses.
