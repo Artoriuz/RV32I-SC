@@ -6,7 +6,7 @@ This repository contains an extremely simple partial implementation of the RV32I
 - Requires 5 clock cycles to complete any instruction.
 - Not designed with multiple RISC-V harts in mind, the memory model is relaxed.
 - FENCE, FENCE.I and CSR instructions are not implemented.
-- Unimplemented instructions (including extensions) will be executed a NOPs.
+- Unimplemented instructions (including extensions) will be executed as NOPs.
 
 ## Developer Guide
 - The repository contains a Quartus II 13.0sp1 project file.
