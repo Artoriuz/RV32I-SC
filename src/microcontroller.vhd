@@ -2,7 +2,7 @@ library ieee;
 use ieee.std_logic_1164.all;
 use work.all;
 
-entity riscv_microcontroller is
+entity microcontroller is
     port(
         clock : in std_logic; 
         reset : in std_logic;
@@ -10,9 +10,9 @@ entity riscv_microcontroller is
 		debug_pc_output : out std_logic_vector(31 downto 0);
 	    debug_regfile_x31_output : out std_logic_vector(31 downto 0)
     );
-end entity riscv_microcontroller;
+end entity microcontroller;
 
-architecture structural of riscv_microcontroller is
+architecture structural of microcontroller is
     signal reg_file_read_address_0 : std_logic_vector(4 downto 0);
     signal reg_file_read_address_1 : std_logic_vector(4 downto 0);
     signal reg_file_write : std_logic;

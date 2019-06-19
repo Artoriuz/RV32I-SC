@@ -1,0 +1,58 @@
+# -------------------------------------------------------------------------- #
+#
+# Copyright (C) 1991-2013 Altera Corporation
+# Your use of Altera Corporation's design tools, logic functions 
+# and other software and tools, and its AMPP partner logic 
+# functions, and any output files from any of the foregoing 
+# (including device programming or simulation files), and any 
+# associated documentation or information are expressly subject 
+# to the terms and conditions of the Altera Program License 
+# Subscription Agreement, Altera MegaCore Function License 
+# Agreement, or other applicable license agreement, including, 
+# without limitation, that your use is for the sole purpose of 
+# programming logic devices manufactured by Altera and sold by 
+# Altera or its authorized distributors.  Please refer to the 
+# applicable agreement for further details.
+#
+# -------------------------------------------------------------------------- #
+#
+# Quartus II 64-Bit
+# Version 13.0.1 Build 232 06/12/2013 Service Pack 1 SJ Web Edition
+# Date created = 12:13:04  June 19, 2019
+#
+# -------------------------------------------------------------------------- #
+#
+# Notes:
+#
+# 1) The default values for assignments are stored in the file:
+#		riscv_microcontroller_assignment_defaults.qdf
+#    If this file doesn't exist, see file:
+#		assignment_defaults.qdf
+#
+# 2) Altera recommends that you do not modify this file. This
+#    file is updated automatically by the Quartus II software
+#    and any changes you make may be lost or overwritten.
+#
+# -------------------------------------------------------------------------- #
+
+
+set_global_assignment -name FAMILY "Cyclone IV GX"
+set_global_assignment -name DEVICE AUTO
+set_global_assignment -name TOP_LEVEL_ENTITY riscv_microcontroller
+set_global_assignment -name ORIGINAL_QUARTUS_VERSION "13.0 SP1"
+set_global_assignment -name PROJECT_CREATION_TIME_DATE "12:13:04  JUNE 19, 2019"
+set_global_assignment -name LAST_QUARTUS_VERSION "13.0 SP1"
+set_global_assignment -name VHDL_FILE ../src/register_file.vhd
+set_global_assignment -name VHDL_FILE ../src/reg32b.vhd
+set_global_assignment -name VHDL_FILE ../src/program_counter.vhd
+set_global_assignment -name VHDL_FILE ../src/progmem_interface.vhd
+set_global_assignment -name VHDL_FILE ../src/progmem.vhd
+set_global_assignment -name VHDL_FILE ../src/mux_32_1.vhd
+set_global_assignment -name VHDL_FILE ../src/mux_3_1.vhd
+set_global_assignment -name VHDL_FILE ../src/mux_2_1.vhd
+set_global_assignment -name VHDL_FILE ../src/microcontroller.vhd
+set_global_assignment -name VHDL_FILE ../src/datapath.vhd
+set_global_assignment -name VHDL_FILE ../src/datamem_interface.vhd
+set_global_assignment -name VHDL_FILE ../src/datamem.vhd
+set_global_assignment -name VHDL_FILE ../src/controller.vhd
+set_global_assignment -name VHDL_FILE ../src/ALU.vhd
