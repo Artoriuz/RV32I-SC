@@ -5,6 +5,7 @@ This repository contains an extremely simple implementation of the RV32I ISA str
 - Entirely written in VHDL.
 - Requires 5 clock cycles to complete any instruction.
 - Not designed with multiple RISC-V harts in mind, the memory model is relaxed.
+- The privileged ISA is **not** implemented.
 - FENCE, FENCE.I and CSR instructions are not implemented.
 - Unimplemented instructions (including extensions) will be executed as NOPs.
 
