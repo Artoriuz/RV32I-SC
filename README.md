@@ -19,7 +19,7 @@ This repository contains an extremely simple implementation of the RV32I ISA str
 - The processor does not have any output. Use the debug output or load to memory to move data out of it. 
 
 ## To-do List
-- Implement a classic RISC 5-stage pipeline.
+- Implement a classic 5-stage RISC pipeline.
 - Evaluate the implementation of extensions.
 - Evaluate switching from RV32I to RV64I.
 - Better separate GPIO addresses.
