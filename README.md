@@ -8,7 +8,7 @@ This repository contains an extremely simple partial implementation of the RV32I
 - FENCE, FENCE.I and CSR instructions are not implemented.
 - Unimplemented instructions (including extensions) will be executed as NOPs.
 
-## Developer Guide
+## User Guide
 - The repository contains a Quartus II 13.0sp1 project file.
 - The repository contains Altera memory files generated for the Cyclone IV GX FPGA. If you wish to use it on a different Altera FPGA you'll have to use the Megawizard plug-in manager to reconfigure them.
 - The program memory comes with a simple fibonacci program for quick debugging.
