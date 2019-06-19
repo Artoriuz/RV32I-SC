@@ -11,7 +11,7 @@ This repository contains an extremely simple implementation of the RV32I ISA str
 ## User Guide
 - The repository contains a Quartus II 13.0sp1 project file.
 - The repository contains Altera memory files generated for the Cyclone IV GX FPGA. If you wish to use it on a different Altera FPGA you'll have to use the Megawizard plug-in manager to reconfigure them.
-- The program memory comes with a simple fibonacci program for quick debugging.
+- Progmem.mif comes with a simple fibonacci program for quick debugging.
 - Outputs that start with "debug" are not mandatory and only exist to make debugging easier.
 
 ## Inconveniences
