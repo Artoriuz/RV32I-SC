@@ -1,9 +1,0 @@
-
-State Machine - |riscv_microcontroller|controller:controller_0|current_state
-Name current_state.write_back current_state.memory_access current_state.execute current_state.decode current_state.fetch current_state.start 
-current_state.start 0 0 0 0 0 0 
-current_state.fetch 0 0 0 0 1 1 
-current_state.decode 0 0 0 1 0 1 
-current_state.execute 0 0 1 0 0 1 
-current_state.memory_access 0 1 0 0 0 1 
-current_state.write_back 1 0 0 0 0 1 
