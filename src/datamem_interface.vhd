@@ -28,10 +28,10 @@ architecture behavioural of datamem_interface is
 	signal memory_output_3 : std_logic_vector(7 downto 0);
 
 	signal membank_address : std_logic_vector(31 downto 0);
-	signal byte_starting_position : std_logic_vector(1 downto 0);
+	signal byte_starting_position : std_logic_vector(1 downto 0) := "00";
 
 begin
-	membank_address_acquirement : process (byte_address, data_format)
+	membank_address_acquirement : process (input_data, byte_address, data_format, load, byte_starting_position, memory_output_0, memory_output_1, memory_output_2, memory_output_3)
 	begin
 		membank_address <= std_logic_vector(shift_right(unsigned(byte_address), 2)); --Dividing by 4 while throwing away non-integer information
 		byte_starting_position <= byte_address(1 downto 0); --Last 2 bits to know which of the 4 memory banks we should access

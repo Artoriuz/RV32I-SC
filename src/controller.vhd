@@ -85,7 +85,7 @@ begin
 		end case;
 	end process;
 
-	signaling_and_instruction_decoding : process (current_state, fetched_instruction)
+	signaling_and_instruction_decoding : process (current_state, fetched_instruction, decoded_cluster, decoded_opcode, instruction)
 	begin
 		case (current_state) is
 			when start => --This states exists to clean the existing mess and restart the processor
