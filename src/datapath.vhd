@@ -38,7 +38,6 @@ architecture structural of datapath is
 
 	signal mux_0_output : std_logic_vector(31 downto 0);
 	signal mux_1_output : std_logic_vector(31 downto 0);
-	signal mux_2_output : std_logic_vector(31 downto 0);
 
 	signal register_file_output_0 : std_logic_vector(31 downto 0);
 	signal register_file_output_1 : std_logic_vector(31 downto 0);
@@ -56,9 +55,8 @@ begin
 
 	program_counter_0 : program_counter port map(immediate, register_file_output_0, PC_operation, ALU_branch_response, clock, reset, PC_output);
 
-	mux_0 : mux_3_1 port map(mux0_sel, mux_2_output, immediate, std_logic_vector(unsigned(PC_output) + 4), mux_0_output);
+	mux_0 : mux_3_1 port map(mux0_sel, ALU_output, datamem_output, std_logic_vector(unsigned(PC_output) + 4), mux_0_output);
 	mux_1 : mux_2_1 port map(mux1_sel, register_file_output_1, immediate, mux_1_output);
-	mux_2 : mux_2_1 port map(mux2_sel, ALU_output, datamem_output, mux_2_output);
 
 	register_file_0 : register_file port map(mux_0_output, reg_file_write_address, reg_file_read_address_0, reg_file_read_address_1, reg_file_write, clock, reset, register_file_output_0, register_file_output_1, debug_regfile_x31_output_signal, debug_regfile_x1_output_signal, debug_regfile_x2_output_signal);
 
@@ -66,7 +64,7 @@ begin
 
 	progmem_module_0 : progmem_interface port map(PC_output, clock, instruction);
 	datamem_module_0 : datamem_interface port map(register_file_output_1, ALU_output, data_format, clock, datamem_write, reset, datamem_output);
-
+	
 	debug_instruction_address <= PC_output;
 	debug_regfile_x31_output <= debug_regfile_x31_output_signal;
 	debug_regfile_x1_output <= debug_regfile_x1_output_signal;

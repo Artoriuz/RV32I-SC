@@ -43,7 +43,7 @@ architecture structural of riscv_microcontroller is
 
 begin
 
-	controller_0 : controller port map(clock, reset, instruction, reg_file_read_address_0, reg_file_read_address_1, reg_file_write, reg_file_write_address, immediate, PC_operation, ALU_operation, ALU_branch, ALU_branch_control, data_format, datamem_write, mux0_sel, mux1_sel, mux2_sel, debug_controller_state);
+	controller_0 : controller port map(clock, reset, instruction, reg_file_read_address_0, reg_file_read_address_1, reg_file_write, reg_file_write_address, immediate, PC_operation, ALU_operation, ALU_branch, ALU_branch_control, data_format, datamem_write, mux0_sel, mux1_sel, debug_controller_state);
 	datapath_0 : datapath port map(clock, reset, reg_file_read_address_0, reg_file_read_address_1, reg_file_write, reg_file_write_address, immediate, PC_operation, ALU_operation, ALU_branch, ALU_branch_control, data_format, datamem_write, mux0_sel, mux1_sel, mux2_sel, instruction, debug_pc_output, debug_regfile_x31_output, debug_regfile_x1_output, debug_regfile_x2_output, debug_ALU_output, debug_ALU_input_0, debug_ALU_input_1);
 
 	debug_regfile_write <= reg_file_write;

@@ -21,7 +21,6 @@ entity controller is
 		datamem_write : out std_logic;
 		mux0_sel : out std_logic_vector(1 downto 0);
 		mux1_sel : out std_logic;
-		mux2_sel : out std_logic;
 		state_indicator_debug : out std_logic_vector(2 downto 0)
 	);
 end entity controller;
@@ -52,7 +51,6 @@ architecture Behavioral of controller is
 	signal internal_datamem_write : std_logic := '0';
 	signal internal_mux0_sel : std_logic_vector(1 downto 0) := "00";
 	signal internal_mux1_sel : std_logic := '0';
-	signal internal_mux2_sel : std_logic := '0';
 	
 
 begin
@@ -102,7 +100,6 @@ begin
 				internal_datamem_write <= '0';
 				internal_mux0_sel <= "00";
 				internal_mux1_sel <= '0';
-				internal_mux2_sel <= '0';
 				state_indicator_debug <= "000";
 			
 			when fetch => --Receives the instruction from the datapath
@@ -120,7 +117,6 @@ begin
 				internal_datamem_write <= '0';
 				internal_mux0_sel <= "00";
 				internal_mux1_sel <= '0';
-				internal_mux2_sel <= '0';
 				state_indicator_debug <= "001";
 				
 			when decode => --Decodes the fetched_instruction
@@ -137,7 +133,6 @@ begin
 				internal_datamem_write <= '0';
 				internal_mux0_sel <= "00";
 				internal_mux1_sel <= '0';
-				internal_mux2_sel <= '0';
 				state_indicator_debug <= "010";
 				case (fetched_instruction(4 downto 2)) is
 					when "000" =>
@@ -352,7 +347,6 @@ begin
 						internal_datamem_write <= '0';
 						internal_mux0_sel <= "00";
 						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
 					when LOAD =>
 						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
 						internal_reg_file_read_address_1 <= "00000";
@@ -365,9 +359,8 @@ begin
 						internal_ALU_branch_control <= "000"; --BEQ, BNE, BLT, BGE, BLTU, BGEU 
 						internal_data_format <= std_logic_vector(fetched_instruction(14 downto 12)); --LB, LH, LW, LBU, LHU
 						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
+						internal_mux0_sel <= "01";
 						internal_mux1_sel <= '1';
-						internal_mux2_sel <= '0';
 
 					when STORE =>
 						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
@@ -383,7 +376,6 @@ begin
 						internal_datamem_write <= '0'; --memory is only written on memory_access
 						internal_mux0_sel <= "00";
 						internal_mux1_sel <= '1';
-						internal_mux2_sel <= '0';
 
 					when BRANCH =>
 						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
@@ -399,7 +391,6 @@ begin
 						internal_datamem_write <= '0';
 						internal_mux0_sel <= "00";
 						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
 
 					when JALR =>
 						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
@@ -415,7 +406,6 @@ begin
 						internal_datamem_write <= '0';
 						internal_mux0_sel <= "10";
 						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
 
 					when JAL =>
 						internal_reg_file_read_address_0 <= "00000";
@@ -431,7 +421,6 @@ begin
 						internal_datamem_write <= '0';
 						internal_mux0_sel <= "10";
 						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
 
 					when OP_IMM => --ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI
 						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
@@ -445,7 +434,6 @@ begin
 						internal_datamem_write <= '0';
 						internal_mux0_sel <= "00";
 						internal_mux1_sel <= '1';
-						internal_mux2_sel <= '0';
 						case (decoded_opcode) is
 							when ADDI | SLTI | SLTIU =>
 								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
@@ -476,7 +464,6 @@ begin
 						internal_datamem_write <= '0';
 						internal_mux0_sel <= "00";
 						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
 
 					when AUIPC =>
 						internal_reg_file_read_address_0 <= "00000";
@@ -492,12 +479,11 @@ begin
 						internal_datamem_write <= '0';
 						internal_mux0_sel <= "00";
 						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
 
 					when LUI =>
 						internal_reg_file_read_address_0 <= "00000";
 						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '1';
+						internal_reg_file_write <= '0';
 						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
 						internal_immediate <= std_logic_vector(fetched_instruction(31 downto 12) & "000000000000");
 						internal_PC_operation <= "001";
@@ -506,368 +492,389 @@ begin
 						internal_ALU_branch_control <= "000";
 						internal_data_format <= "000";
 						internal_datamem_write <= '0';
-						internal_mux0_sel <= "01";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
+						internal_mux0_sel <= "00";
+						internal_mux1_sel <= '1';
 					when others =>
 				end case;
 				state_indicator_debug <= "011";
 
-			when memory_access =>
-				internal_PC_operation <= "000";
-				case (decoded_cluster) is
-					when INVALID =>
-						internal_reg_file_read_address_0 <= "00000";
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '0';
-						internal_reg_file_write_address <= "00000";
-						internal_immediate <= X"00000000";
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "1111"; --random unused number to make the ALU output 0
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-					when LOAD =>
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '0'; --regfile is only lodaded on write_back
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 20));
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000"; --BEQ, BNE, BLT, BGE, BLTU, BGEU 
-						internal_data_format <= std_logic_vector(fetched_instruction(14 downto 12)); --LB, LH, LW, LBU, LHU
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '1';
-						internal_mux2_sel <= '0';
+--			when memory_access =>
+--				internal_PC_operation <= "000";
+--				case (decoded_cluster) is
+--					when INVALID =>
+--						internal_reg_file_read_address_0 <= "00000";
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= "00000";
+--						internal_immediate <= X"00000000";
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "1111"; --random unused number to make the ALU output 0
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '0';
+--					when LOAD =>
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '0'; --regfile is only lodaded on write_back
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 20));
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000"; --BEQ, BNE, BLT, BGE, BLTU, BGEU 
+--						internal_data_format <= std_logic_vector(fetched_instruction(14 downto 12)); --LB, LH, LW, LBU, LHU
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '1';
+--
+--					when STORE =>
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 25) & fetched_instruction(11 downto 7));
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000"; --BEQ, BNE, BLT, BGE, BLTU, BGEU 
+--						internal_data_format <= std_logic_vector(fetched_instruction(14 downto 12)); --SB, SH, SW
+--						internal_datamem_write <= '1'; --memory is written on memory_access
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '1';
+--
+--					when BRANCH =>
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector("00000000000000000" & fetched_instruction(31) & fetched_instruction(7) & fetched_instruction(30 downto 25) & fetched_instruction(11 downto 6) & '0');
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '1';
+--						internal_ALU_branch_control <= std_logic_vector(fetched_instruction(14 downto 12)); --BEQ, BNE, BLT, BGE, BLTU, BGEU 
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '0';
+--
+--					when JALR =>
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31 downto 20) & "00000000000000000000"), 20));
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "10";
+--						internal_mux1_sel <= '0';
+--
+--					when JAL =>
+--						internal_reg_file_read_address_0 <= "00000";
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31) & fetched_instruction(19 downto 12) & fetched_instruction(20) & fetched_instruction(30 downto 21) & '0' & "00000000000"), 11));
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "10";
+--						internal_mux1_sel <= '0';
+--
+--					when OP_IMM => --ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_PC_operation <= "000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '1';
+--						case (decoded_opcode) is
+--							when ADDI | SLTI | SLTIU =>
+--								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
+--								internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31 downto 20) & "00000000000000000000"), 20));
+--							when XORI | ORI | ANDI =>
+--								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
+--								internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 20));
+--							when SLLI =>
+--								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
+--								internal_immediate <= std_logic_vector("000000000000000000000000000" & fetched_instruction(24 downto 20));
+--							when SRLI | SRAI =>
+--								internal_ALU_operation <= std_logic_vector(fetched_instruction(30) & fetched_instruction(14 downto 12));
+--								internal_immediate <= std_logic_vector("000000000000000000000000000" & fetched_instruction(24 downto 20));
+--							when others =>
+--						end case;
+--
+--					when OP =>
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= X"00000000";
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= std_logic_vector(fetched_instruction(30) & fetched_instruction(14 downto 12));
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '0';
+--
+--					when AUIPC =>
+--						internal_reg_file_read_address_0 <= "00000";
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector(fetched_instruction(31 downto 12) & "000000000000");
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '0';
+--
+--					when LUI =>
+--						internal_reg_file_read_address_0 <= "00000";
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector(fetched_instruction(31 downto 12) & "000000000000");
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '1';
+--					when others =>
+--				end case;
+--				state_indicator_debug <= "100";
+--
+--			when write_back =>
+--				internal_PC_operation <= "000";
+--				case (decoded_cluster) is
+--					when INVALID =>
+--						internal_reg_file_read_address_0 <= "00000";
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= "00000";
+--						internal_immediate <= X"00000000";
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "1111"; --random unused number to make the ALU output 0
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '0';
+--					when LOAD =>
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '1'; --regfile is only lodaded on write_back
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 20));
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000"; --BEQ, BNE, BLT, BGE, BLTU, BGEU 
+--						internal_data_format <= std_logic_vector(fetched_instruction(14 downto 12)); --LB, LH, LW, LBU, LHU
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "01";
+--						internal_mux1_sel <= '1';
+--
+--					when STORE =>
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 25) & fetched_instruction(11 downto 7));
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000"; --BEQ, BNE, BLT, BGE, BLTU, BGEU 
+--						internal_data_format <= std_logic_vector(fetched_instruction(14 downto 12)); --SB, SH, SW
+--						internal_datamem_write <= '0'; --memory is only written on memory_access
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '1';
+--
+--					when BRANCH =>
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
+--						internal_reg_file_write <= '0';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector("00000000000000000" & fetched_instruction(31) & fetched_instruction(7) & fetched_instruction(30 downto 25) & fetched_instruction(11 downto 6) & '0');
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '1';
+--						internal_ALU_branch_control <= std_logic_vector(fetched_instruction(14 downto 12)); --BEQ, BNE, BLT, BGE, BLTU, BGEU 
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "10";
+--						internal_mux1_sel <= '0';
+--
+--					when JALR =>
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '1';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31 downto 20) & "00000000000000000000"), 20));
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "10";
+--						internal_mux1_sel <= '0';
+--
+--					when JAL =>
+--						internal_reg_file_read_address_0 <= "00000";
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '1';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31) & fetched_instruction(19 downto 12) & fetched_instruction(20) & fetched_instruction(30 downto 21) & '0' & "00000000000"), 11));
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "10";
+--						internal_mux1_sel <= '0';
+--
+--					when OP_IMM => --ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
+--						internal_reg_file_write <= '1';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_PC_operation <= "000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '1';
+--						case (decoded_opcode) is
+--							when ADDI | SLTI | SLTIU =>
+--								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
+--								internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31 downto 20) & "00000000000000000000"), 20));
+--							when XORI | ORI | ANDI =>
+--								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
+--								internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 20));
+--							when SLLI =>
+--								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
+--								internal_immediate <= std_logic_vector("000000000000000000000000000" & fetched_instruction(24 downto 20));
+--							when SRLI | SRAI =>
+--								internal_ALU_operation <= std_logic_vector(fetched_instruction(30) & fetched_instruction(14 downto 12));
+--								internal_immediate <= std_logic_vector("000000000000000000000000000" & fetched_instruction(24 downto 20));
+--							when others =>
+--						end case;
+--
+--					when OP =>
+--						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
+--						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
+--						internal_reg_file_write <= '1';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= X"00000000";
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= std_logic_vector(fetched_instruction(30) & fetched_instruction(14 downto 12));
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '0';
+--
+--					when AUIPC =>
+--						internal_reg_file_read_address_0 <= "00000";
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '1';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector(fetched_instruction(31 downto 12) & "000000000000");
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '0';
+--
+--					when LUI =>
+--						internal_reg_file_read_address_0 <= "00000";
+--						internal_reg_file_read_address_1 <= "00000";
+--						internal_reg_file_write <= '1';
+--						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
+--						internal_immediate <= std_logic_vector(fetched_instruction(31 downto 12) & "000000000000");
+--						internal_PC_operation <= "000";
+--						internal_ALU_operation <= "0000";
+--						internal_ALU_branch <= '0';
+--						internal_ALU_branch_control <= "000";
+--						internal_data_format <= "000";
+--						internal_datamem_write <= '0';
+--						internal_mux0_sel <= "00";
+--						internal_mux1_sel <= '1';
+--					when others =>
+--				end case;
+--				state_indicator_debug <= "101";
 
-					when STORE =>
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
-						internal_reg_file_write <= '0';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 25) & fetched_instruction(11 downto 7));
+				when memory_access =>
+						internal_reg_file_read_address_0 <= internal_reg_file_read_address_0;
+						internal_reg_file_read_address_1 <= internal_reg_file_read_address_1;
+						internal_reg_file_write <= internal_reg_file_write;
+						internal_reg_file_write_address <= internal_reg_file_write_address;
+						internal_immediate <= internal_immediate;
 						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000"; --BEQ, BNE, BLT, BGE, BLTU, BGEU 
-						internal_data_format <= std_logic_vector(fetched_instruction(14 downto 12)); --SB, SH, SW
-						internal_datamem_write <= '1'; --memory is written on memory_access
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '1';
-						internal_mux2_sel <= '0';
+						internal_ALU_operation <= internal_ALU_operation;
+						internal_ALU_branch <= internal_ALU_branch;
+						internal_ALU_branch_control <= internal_ALU_branch_control;
+						internal_data_format <= internal_data_format;
+						internal_mux0_sel <= internal_mux0_sel;
+						internal_mux1_sel <= internal_mux1_sel;
+                case (decoded_cluster) is
+                    when STORE =>
+                        internal_datamem_write <= '1';  
+                    when others =>
+                        internal_datamem_write <= '0';
+                end case;
+					 state_indicator_debug <= "100";
 
-					when BRANCH =>
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
-						internal_reg_file_write <= '0';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector("00000000000000000" & fetched_instruction(31) & fetched_instruction(7) & fetched_instruction(30 downto 25) & fetched_instruction(11 downto 6) & '0');
+            when write_back =>
+						internal_reg_file_read_address_0 <= internal_reg_file_read_address_0;
+						internal_reg_file_read_address_1 <= internal_reg_file_read_address_1;
+						internal_reg_file_write_address <= internal_reg_file_write_address;
+						internal_immediate <= internal_immediate;
 						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '1';
-						internal_ALU_branch_control <= std_logic_vector(fetched_instruction(14 downto 12)); --BEQ, BNE, BLT, BGE, BLTU, BGEU 
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-
-					when JALR =>
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '0';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31 downto 20) & "00000000000000000000"), 20));
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "10";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-
-					when JAL =>
-						internal_reg_file_read_address_0 <= "00000";
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '0';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31) & fetched_instruction(19 downto 12) & fetched_instruction(20) & fetched_instruction(30 downto 21) & '0' & "00000000000"), 11));
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "10";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-
-					when OP_IMM => --ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
-						internal_reg_file_write <= '0';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_PC_operation <= "000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '1';
-						internal_mux2_sel <= '0';
-						case (decoded_opcode) is
-							when ADDI | SLTI | SLTIU =>
-								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
-								internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31 downto 20) & "00000000000000000000"), 20));
-							when XORI | ORI | ANDI =>
-								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
-								internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 20));
-							when SLLI =>
-								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
-								internal_immediate <= std_logic_vector("000000000000000000000000000" & fetched_instruction(24 downto 20));
-							when SRLI | SRAI =>
-								internal_ALU_operation <= std_logic_vector(fetched_instruction(30) & fetched_instruction(14 downto 12));
-								internal_immediate <= std_logic_vector("000000000000000000000000000" & fetched_instruction(24 downto 20));
-							when others =>
-						end case;
-
-					when OP =>
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
-						internal_reg_file_write <= '0';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= X"00000000";
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= std_logic_vector(fetched_instruction(30) & fetched_instruction(14 downto 12));
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-
-					when AUIPC =>
-						internal_reg_file_read_address_0 <= "00000";
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '0';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector(fetched_instruction(31 downto 12) & "000000000000");
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-
-					when LUI =>
-						internal_reg_file_read_address_0 <= "00000";
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '1';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector(fetched_instruction(31 downto 12) & "000000000000");
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "01";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-					when others =>
-				end case;
-				state_indicator_debug <= "100";
-
-			when write_back =>
-				internal_PC_operation <= "000";
-				case (decoded_cluster) is
-					when INVALID =>
-						internal_reg_file_read_address_0 <= "00000";
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '0';
-						internal_reg_file_write_address <= "00000";
-						internal_immediate <= X"00000000";
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "1111"; --random unused number to make the ALU output 0
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-					when LOAD =>
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '1'; --regfile is only lodaded on write_back
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 20));
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000"; --BEQ, BNE, BLT, BGE, BLTU, BGEU 
-						internal_data_format <= std_logic_vector(fetched_instruction(14 downto 12)); --LB, LH, LW, LBU, LHU
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '1';
-						internal_mux2_sel <= '0';
-
-					when STORE =>
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
-						internal_reg_file_write <= '0';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 25) & fetched_instruction(11 downto 7));
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000"; --BEQ, BNE, BLT, BGE, BLTU, BGEU 
-						internal_data_format <= std_logic_vector(fetched_instruction(14 downto 12)); --SB, SH, SW
-						internal_datamem_write <= '0'; --memory is only written on memory_access
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '1';
-						internal_mux2_sel <= '0';
-
-					when BRANCH =>
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
-						internal_reg_file_write <= '0';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector("00000000000000000" & fetched_instruction(31) & fetched_instruction(7) & fetched_instruction(30 downto 25) & fetched_instruction(11 downto 6) & '0');
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '1';
-						internal_ALU_branch_control <= std_logic_vector(fetched_instruction(14 downto 12)); --BEQ, BNE, BLT, BGE, BLTU, BGEU 
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-
-					when JALR =>
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '1';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31 downto 20) & "00000000000000000000"), 20));
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "10";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-
-					when JAL =>
-						internal_reg_file_read_address_0 <= "00000";
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '1';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31) & fetched_instruction(19 downto 12) & fetched_instruction(20) & fetched_instruction(30 downto 21) & '0' & "00000000000"), 11));
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "10";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-
-					when OP_IMM => --ADDI, SLTI, SLTIU, XORI, ORI, ANDI, SLLI, SRLI, SRAI
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
-						internal_reg_file_write <= '1';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_PC_operation <= "000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '1';
-						internal_mux2_sel <= '0';
-						case (decoded_opcode) is
-							when ADDI | SLTI | SLTIU =>
-								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
-								internal_immediate <= std_logic_vector(shift_right(signed(fetched_instruction(31 downto 20) & "00000000000000000000"), 20));
-							when XORI | ORI | ANDI =>
-								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
-								internal_immediate <= std_logic_vector("00000000000000000000" & fetched_instruction(31 downto 20));
-							when SLLI =>
-								internal_ALU_operation <= std_logic_vector('0' & fetched_instruction(14 downto 12));
-								internal_immediate <= std_logic_vector("000000000000000000000000000" & fetched_instruction(24 downto 20));
-							when SRLI | SRAI =>
-								internal_ALU_operation <= std_logic_vector(fetched_instruction(30) & fetched_instruction(14 downto 12));
-								internal_immediate <= std_logic_vector("000000000000000000000000000" & fetched_instruction(24 downto 20));
-							when others =>
-						end case;
-
-					when OP =>
-						internal_reg_file_read_address_0 <= fetched_instruction(19 downto 15);
-						internal_reg_file_read_address_1 <= fetched_instruction(24 downto 20);
-						internal_reg_file_write <= '1';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= X"00000000";
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= std_logic_vector(fetched_instruction(30) & fetched_instruction(14 downto 12));
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-
-					when AUIPC =>
-						internal_reg_file_read_address_0 <= "00000";
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '1';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector(fetched_instruction(31 downto 12) & "000000000000");
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "00";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-
-					when LUI =>
-						internal_reg_file_read_address_0 <= "00000";
-						internal_reg_file_read_address_1 <= "00000";
-						internal_reg_file_write <= '1';
-						internal_reg_file_write_address <= fetched_instruction(11 downto 7);
-						internal_immediate <= std_logic_vector(fetched_instruction(31 downto 12) & "000000000000");
-						internal_PC_operation <= "000";
-						internal_ALU_operation <= "0000";
-						internal_ALU_branch <= '0';
-						internal_ALU_branch_control <= "000";
-						internal_data_format <= "000";
-						internal_datamem_write <= '0';
-						internal_mux0_sel <= "01";
-						internal_mux1_sel <= '0';
-						internal_mux2_sel <= '0';
-					when others =>
-				end case;
-				state_indicator_debug <= "101";
+						internal_ALU_operation <= internal_ALU_operation;
+						internal_ALU_branch <= internal_ALU_branch;
+						internal_ALU_branch_control <= internal_ALU_branch_control;
+						internal_data_format <= internal_data_format;
+						internal_datamem_write <= internal_datamem_write;
+						internal_mux0_sel <= internal_mux0_sel;
+						internal_mux1_sel <= internal_mux1_sel;
+                case (decoded_cluster) is
+                    when LOAD|JALR|JAL|OP_IMM|OP|AUIPC|LUI =>
+                        internal_reg_file_write <= '1';
+                    when others =>
+                        internal_reg_file_write <= '0';
+                end case;
+					 state_indicator_debug <= "101";
 
 		end case;
 	end process;
@@ -885,6 +892,5 @@ begin
 	datamem_write <= internal_datamem_write;
 	mux0_sel <= internal_mux0_sel;
 	mux1_sel <= internal_mux1_sel;
-	mux2_sel <= internal_mux2_sel;
 	
 end architecture Behavioral;
